@@ -1,0 +1,19 @@
+name: AI Build Test
+on:
+  push:
+    branches: [ai-build-test-20261003]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "cultivation PHASE 1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make cultivation
+      - name: Run smoke test
+        run: |
+          printf 'help\ntime\nworld\nhash\nstats\nquit\n' | ./cultivation --seed 42 --regions 12
+      - name: Run unit tests
+        run: make test

@@ -2,6 +2,8 @@ name: AI Build Test
 on:
   push:
     branches: [ai-build-test-20261003]
+  pull_request:
+    branches: [main]
 jobs:
   build:
     runs-on: ubuntu-latest

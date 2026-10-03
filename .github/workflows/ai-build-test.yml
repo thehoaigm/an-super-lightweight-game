@@ -4,6 +4,7 @@ on:
     branches: [ai-build-test-20261003]
   pull_request:
     branches: [main]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,10 +13,46 @@ jobs:
         working-directory: "cultivation PHASE 1"
     steps:
       - uses: actions/checkout@v4
+
       - name: Build
-        run: make cultivation
-      - name: Run smoke test
+        run: make
+
+      - name: Run full console smoke test
         run: |
-          printf 'help\ntime\nworld\nhash\nstats\nquit\n' | ./cultivation --seed 42 --regions 12
+          rm -f /tmp/cx_smoke.sav /tmp/cx_smoke.json
+          cat <<'EOF' | ./cultivation --seed 42 --regions 12
+          help
+          time
+          world
+          inspect region 0
+          inspect region 0 0 0
+          focus 3
+          region qi 3 123
+          hash
+          stats
+          time skip 1d
+          hash
+          save /tmp/cx_smoke.sav
+          time skip 30d
+          save /tmp/cx_smoke.sav
+          load /tmp/cx_smoke.sav
+          json /tmp/cx_smoke.json
+          stats
+          run 0.05 600
+          quit
+          EOF
+          test -s /tmp/cx_smoke.sav
+          test -s /tmp/cx_smoke.json
+
+      - name: Test explicit load mode
+        run: |
+          ./cultivation --load /tmp/cx_smoke.sav < /dev/null
+
       - name: Run unit tests
         run: make test
+
+      - name: Check tracked tree
+        run: |
+          git status --short
+          test -f cultivation
+          test -f cx_tests
